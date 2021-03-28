@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.jayway.jsonpath.JsonPath;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +12,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -40,12 +43,19 @@ public class ExpenseTest {
         dataForRequest.put("id", "1");
         dataForRequest.put("minSum", "1");
 
-        mockMvc.perform(post("/getExpensesOnThisCost").contentType(APPLICATION_JSON_UTF8)
+        MvcResult result = mockMvc.perform(post("/getExpensesOnThisCost").contentType(APPLICATION_JSON_UTF8)
                 .content(mapper.writeValueAsString(dataForRequest)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("{")))
-                .andExpect(content().string(containsString("[")));
+                .andExpect(content().string(containsString("[")))
+                .andReturn();
+
+        String responseData = result.getResponse().getContentAsString();
+
+        assertThat(responseData, containsString("спорт"));
+        assertThat(responseData, containsString("питание"));
+        assertThat(responseData, containsString("развлечения"));
 
     }
 
